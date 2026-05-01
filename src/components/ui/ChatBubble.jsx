@@ -7,8 +7,9 @@ import { cn } from "../../utils"
  *   message   {string}  — text content
  *   isSenderAI {bool}   — true = AI bubble (left), false = user bubble (right)
  *   timestamp  {string} — optional formatted time string
+ *   instant    {bool}   — true = predefined answer (⚡), false = Gemini answer (🤖)
  */
-export function ChatBubble({ message, isSenderAI, timestamp }) {
+export function ChatBubble({ message, isSenderAI, timestamp, instant = false }) {
   return (
     <div
       className={cn(
@@ -36,20 +37,26 @@ export function ChatBubble({ message, isSenderAI, timestamp }) {
               : "bg-primary-600 text-white rounded-tr-sm shadow-sm"
           )}
         >
-          {/* Render message text safely — no dangerouslySetInnerHTML */}
+          {/* Plain text only — no HTML rendering, XSS-safe */}
           {message}
         </div>
 
-        {timestamp && (
-          <span
-            className={cn(
-              "text-[10px] text-slate-400 px-1",
-              isSenderAI ? "text-left" : "text-right"
-            )}
-          >
-            {timestamp}
-          </span>
-        )}
+        {/* Status badge + timestamp row */}
+        <div className={cn(
+          "flex items-center gap-2 px-1",
+          isSenderAI ? "justify-start" : "justify-end"
+        )}>
+          {isSenderAI && (
+            <span className="text-[9px] font-medium text-slate-400">
+              {instant ? "⚡ Instant answer" : "🤖 AI response"}
+            </span>
+          )}
+          {timestamp && (
+            <span className="text-[9px] text-slate-400">
+              {timestamp}
+            </span>
+          )}
+        </div>
       </div>
 
       {/* User avatar dot */}

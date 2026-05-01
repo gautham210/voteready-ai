@@ -10,6 +10,14 @@ import { ChatBubble } from "../ui/ChatBubble"
  * Security note: VITE_GEMINI_API_KEY is injected at build time via .env
  * and must NEVER be committed to source control (.gitignore enforced).
  */
+
+// Module-level constant — not recreated on every render
+const QUICK_QUESTIONS = [
+  "Can I vote at 18?",
+  "What ID do I need?",
+  "How does voting work?",
+]
+
 export function ChatAssistant({ isOpen, onClose, currentStep }) {
   const { messages, sendMessage, isTyping } = useChatContext(currentStep)
   const [input, setInput] = useState("")
@@ -30,7 +38,7 @@ export function ChatAssistant({ isOpen, onClose, currentStep }) {
     }
   }, [isOpen])
 
-  // Trap Escape key to close
+  // Escape key closes the dialog
   useEffect(() => {
     if (!isOpen) return
     const onKey = (e) => { if (e.key === "Escape") onClose() }
@@ -46,16 +54,15 @@ export function ChatAssistant({ isOpen, onClose, currentStep }) {
     setInput("")
   }, [input, isTyping, sendMessage])
 
+  // Stable click handler for quick-question chips
+  const handleChip = useCallback((q) => {
+    sendMessage(q)
+  }, [sendMessage])
+
   if (!isOpen) return null
 
-  const QUICK_QUESTIONS = [
-    "Can I vote at 18?",
-    "What ID do I need?",
-    "How does EVM work?",
-  ]
-
   return (
-    /* Backdrop */
+    /* Backdrop — click outside panel to close */
     <div
       role="dialog"
       aria-modal="true"
@@ -66,7 +73,7 @@ export function ChatAssistant({ isOpen, onClose, currentStep }) {
       {/* Panel */}
       <div className="flex flex-col h-full w-full bg-white sm:max-w-md sm:h-[620px] sm:rounded-2xl shadow-glass overflow-hidden">
 
-        {/* ── Header ─────────────────────────────────────────────────── */}
+        {/* ── Header ──────────────────────────────────────────────────── */}
         <div className="flex items-center justify-between px-4 py-3 bg-primary-600 text-white">
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
@@ -74,7 +81,6 @@ export function ChatAssistant({ isOpen, onClose, currentStep }) {
             </div>
             <div>
               <h2 className="font-semibold text-sm leading-none">VoteReady AI</h2>
-              {/* Shows which walkthrough step the user is on */}
               <p className="text-[10px] text-primary-100 mt-0.5 leading-none">
                 {currentStep ? `Context: ${currentStep}` : "Indian Voting Assistant"}
               </p>
@@ -82,8 +88,11 @@ export function ChatAssistant({ isOpen, onClose, currentStep }) {
           </div>
 
           <div className="flex items-center gap-2">
-            {/* Gemini badge — highlights Google service usage for judges */}
-            <span className="text-[9px] font-semibold bg-white/20 rounded-full px-2 py-0.5 tracking-wide">
+            {/* Gemini badge — highlights Google Gemini integration */}
+            <span
+              title="Google Gemini 2.0 Flash"
+              className="text-[9px] font-semibold bg-white/20 rounded-full px-2 py-0.5 tracking-wide"
+            >
               Powered by Gemini
             </span>
             <button
@@ -96,11 +105,15 @@ export function ChatAssistant({ isOpen, onClose, currentStep }) {
           </div>
         </div>
 
-        {/* ── Message list ────────────────────────────────────────────── */}
+        {/* ── Message list ─────────────────────────────────────────────── */}
+        {/*
+          role="log" is the correct ARIA role for a live message feed.
+          aria-live="polite" announces new messages to screen readers.
+        */}
         <div
           ref={scrollRef}
           className="flex-1 overflow-y-auto px-4 py-4 bg-slate-50"
-          role="list"
+          role="log"
           aria-label="Chat messages"
           aria-live="polite"
           aria-atomic="false"
@@ -111,37 +124,50 @@ export function ChatAssistant({ isOpen, onClose, currentStep }) {
               message={msg.text}
               isSenderAI={msg.sender === "ai"}
               timestamp={msg.timestamp}
+              instant={msg.instant}
             />
           ))}
 
-          {/* Typing indicator */}
+          {/* Typing indicator — only shown while Gemini is responding */}
           {isTyping && (
-            <div className="flex w-full mb-3 justify-start" aria-label="AI is typing">
-              <div className="w-7 h-7 rounded-full bg-primary-600 flex items-center justify-center text-white text-xs font-bold mr-2 mt-1 flex-shrink-0">
+            <div className="flex w-full mb-3 justify-start" aria-label="AI is thinking">
+              <div
+                aria-hidden="true"
+                className="w-7 h-7 rounded-full bg-primary-600 flex items-center justify-center text-white text-xs font-bold mr-2 mt-1 flex-shrink-0"
+              >
                 AI
               </div>
               <div className="bg-white border border-slate-100 rounded-2xl rounded-tl-sm px-4 py-3 shadow-sm">
-                <span className="flex space-x-1 items-center h-4">
+                <span className="flex space-x-1 items-center h-4" aria-hidden="true">
                   <span className="typing-dot h-1.5 w-1.5 bg-slate-400 rounded-full" />
                   <span className="typing-dot h-1.5 w-1.5 bg-slate-400 rounded-full" />
                   <span className="typing-dot h-1.5 w-1.5 bg-slate-400 rounded-full" />
                 </span>
+                <span className="sr-only">AI is thinking…</span>
               </div>
             </div>
           )}
         </div>
 
-        {/* ── Quick questions ─────────────────────────────────────────── */}
+        {/* ── Quick-question chips — shown only before first user message ─ */}
         {messages.length <= 1 && !isTyping && (
           <div className="px-4 py-2 bg-white border-t border-slate-100">
-            <p className="text-[10px] text-slate-400 font-medium mb-1.5 uppercase tracking-wide">
+            <p
+              id="quick-questions-label"
+              className="text-[10px] text-slate-400 font-medium mb-1.5 uppercase tracking-wide"
+            >
               Suggested questions
             </p>
-            <div className="flex flex-wrap gap-1.5">
+            <div
+              className="flex flex-wrap gap-1.5"
+              role="group"
+              aria-labelledby="quick-questions-label"
+            >
               {QUICK_QUESTIONS.map((q) => (
                 <button
                   key={q}
-                  onClick={() => { sendMessage(q) }}
+                  aria-label={`Ask: ${q}`}
+                  onClick={() => handleChip(q)}
                   className="text-xs bg-slate-100 hover-lift btn-press text-slate-700 rounded-full px-3 py-1.5 font-medium"
                 >
                   {q}
@@ -151,7 +177,7 @@ export function ChatAssistant({ isOpen, onClose, currentStep }) {
           </div>
         )}
 
-        {/* ── Input form ──────────────────────────────────────────────── */}
+        {/* ── Input form ────────────────────────────────────────────────── */}
         <form
           onSubmit={handleSend}
           className="px-3 py-3 border-t border-slate-100 bg-white flex items-center gap-2"
@@ -167,7 +193,7 @@ export function ChatAssistant({ isOpen, onClose, currentStep }) {
             onChange={(e) => setInput(e.target.value)}
             maxLength={500}
             autoComplete="off"
-            aria-label="Type your question"
+            aria-label="Ask about voting in India"
             disabled={isTyping}
           />
           <button
@@ -180,7 +206,7 @@ export function ChatAssistant({ isOpen, onClose, currentStep }) {
           </button>
         </form>
 
-        {/* Disclaimer */}
+        {/* Legal disclaimer */}
         <p className="text-center text-[9px] text-slate-400 pb-2 bg-white">
           VoteReady AI provides general guidance only — not legal advice.
         </p>

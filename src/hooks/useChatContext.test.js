@@ -221,3 +221,105 @@ describe('useChatContext — predefined knowledge base', () => {
     expect(getGeminiResponse).toHaveBeenCalledOnce();
   });
 });
+
+// ── Token-based matcher upgrade tests ────────────────────────────────────────
+
+describe('useChatContext — token-based findBestMatch', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('matches "id" token in short question — no Gemini call', async () => {
+    const { result } = renderHook(() => useChatContext(''));
+
+    await act(async () => {
+      await result.current.sendMessage('need an id');
+    });
+
+    expect(getGeminiResponse).not.toHaveBeenCalled();
+    const lastAI = result.current.messages.filter(m => m.sender === 'ai').at(-1);
+    expect(lastAI.text).toMatch(/Aadhaar/i);
+  });
+
+  it('matches vote+18 tokens in natural phrasing', async () => {
+    const { result } = renderHook(() => useChatContext(''));
+
+    await act(async () => {
+      await result.current.sendMessage('im turning 18 can i vote');
+    });
+
+    expect(getGeminiResponse).not.toHaveBeenCalled();
+    const lastAI = result.current.messages.filter(m => m.sender === 'ai').at(-1);
+    expect(lastAI.text).toMatch(/minimum voting age/i);
+  });
+
+  it('matches "nota" token anywhere in the sentence', async () => {
+    const { result } = renderHook(() => useChatContext(''));
+
+    await act(async () => {
+      await result.current.sendMessage('explain nota to me please');
+    });
+
+    expect(getGeminiResponse).not.toHaveBeenCalled();
+    const lastAI = result.current.messages.filter(m => m.sender === 'ai').at(-1);
+    expect(lastAI.text).toMatch(/none of the above/i);
+  });
+
+  it('matches how+vote tokens for process question', async () => {
+    const { result } = renderHook(() => useChatContext(''));
+
+    await act(async () => {
+      await result.current.sendMessage('how do i vote');
+    });
+
+    expect(getGeminiResponse).not.toHaveBeenCalled();
+    const lastAI = result.current.messages.filter(m => m.sender === 'ai').at(-1);
+    expect(lastAI.text).toMatch(/polling booth/i);
+  });
+
+  it('marks predefined answers as instant=true in message object', async () => {
+    const { result } = renderHook(() => useChatContext(''));
+
+    await act(async () => {
+      await result.current.sendMessage('what is nota');
+    });
+
+    const lastAI = result.current.messages.filter(m => m.sender === 'ai').at(-1);
+    expect(lastAI.instant).toBe(true);
+  });
+
+  it('marks Gemini answers as instant=false in message object', async () => {
+    getGeminiResponse.mockResolvedValue('Great question!');
+    const { result } = renderHook(() => useChatContext(''));
+
+    await act(async () => {
+      await result.current.sendMessage('what happens on counting day');
+    });
+
+    const lastAI = result.current.messages.filter(m => m.sender === 'ai').at(-1);
+    expect(lastAI.instant).toBe(false);
+  });
+
+  it('input guard: does not call Gemini when isTyping is true', async () => {
+    // Simulate a slow Gemini response that never resolves during the test
+    let resolve;
+    getGeminiResponse.mockReturnValue(new Promise(r => { resolve = r; }));
+    const { result } = renderHook(() => useChatContext(''));
+
+    // Fire first message (not predefined) — sets isTyping=true
+    act(() => {
+      result.current.sendMessage('when is the next election');
+    });
+
+    // Attempt second send while first is in-flight
+    await act(async () => {
+      await result.current.sendMessage('another question');
+    });
+
+    // Only one call should have been made
+    expect(getGeminiResponse).toHaveBeenCalledTimes(1);
+
+    // Resolve the first to clean up
+    resolve('done');
+  });
+});

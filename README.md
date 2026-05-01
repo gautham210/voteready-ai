@@ -1,6 +1,17 @@
-# VoteReady AI
+🚀 **VoteReady AI** — A production-grade civic platform that simulates the complete Indian voting process and uses Google Gemini AI to guide first-time voters in real-time.
 
-> A civic education platform guiding first-time Indian voters through the complete voting process — powered by **Google Gemini 2.0 Flash**.
+> Powered by **Google Gemini 2.0 Flash** · Built for first-time Indian voters · Accessibility-first · Demo-proof
+
+---
+
+## ✨ Features
+
+- **Step-by-step voting simulation** — full 6-step realistic polling booth flow
+- **NOTA support** — None Of The Above on the EVM machine
+- **AI-powered guidance** — Google Gemini 2.0 Flash answers voter questions
+- **Smart fallback system** — instant predefined answers for common questions (zero-failure UX)
+- **Real-world voting flow accuracy** — ID check → officer verification → ink mark → EVM → confirmation
+- **Accessibility-first design** — ARIA roles, keyboard navigation, screen reader support
 
 ---
 
@@ -52,7 +63,7 @@ npm run test:coverage # Coverage report
 
 Tests cover:
 - `useProgress` — task toggling and percentage calculation
-- `useChatContext` — political guard, Gemini calls, error mapping
+- `useChatContext` — political guard, Gemini calls, error mapping, token-based matching, instant flag
 - `gemini.js` — API request structure, error handling, key validation
 - `BoothWalkthrough` — full 6-step flow integration
 

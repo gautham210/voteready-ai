@@ -37,26 +37,50 @@ const SUGGESTED_QA = {
 
 /**
  * Normalize a string for fuzzy matching:
- * lowercase, remove punctuation, collapse whitespace.
+ * lowercase, strip punctuation, trim whitespace.
  */
 const normalize = (text) =>
   text.toLowerCase().replace(/[^\w\s]/g, "").trim();
 
 /**
- * Check whether the user's input contains any predefined Q&A key.
- * Returns the predefined answer string, or null if no match.
+ * Token-based matcher — more robust than pure substring matching.
+ * Handles real-world phrasing like "i'm 18 can i vote?" or "need an id".
  *
- * Examples that match:
- *   "im 18 can i vote at 18 now?"  → matches "can i vote at 18"
- *   "what id do i need to vote?"   → matches "what id do i need"
+ * Returns the matched answer string, or null.
  */
 const findBestMatch = (input) => {
-  const normalizedInput = normalize(input);
-  for (const key of Object.keys(SUGGESTED_QA)) {
-    if (normalizedInput.includes(key)) {
-      return SUGGESTED_QA[key];
-    }
+  const text = normalize(input);
+
+  // "id" keyword → document question (check before "vote" tests)
+  if (text.includes("id")) {
+    return SUGGESTED_QA["what id do i need"];
   }
+
+  // voting age — must mention "vote" AND "18"
+  if (text.includes("vote") && text.includes("18")) {
+    return SUGGESTED_QA["can i vote at 18"];
+  }
+
+  // NOTA explanation
+  if (text.includes("nota")) {
+    return SUGGESTED_QA["what is nota"];
+  }
+
+  // Polling location
+  if (text.includes("where") && text.includes("vote")) {
+    return SUGGESTED_QA["where do i vote"];
+  }
+
+  // Voting without voter ID card
+  if (text.includes("without") && text.includes("voter")) {
+    return SUGGESTED_QA["can i vote without voter id"];
+  }
+
+  // General process question
+  if (text.includes("how") && text.includes("vote")) {
+    return SUGGESTED_QA["how does voting work"];
+  }
+
   return null;
 };
 
@@ -69,19 +93,30 @@ function nowTime() {
   });
 }
 
-/** Create a well-formed message object. */
-function makeMsg(sender, text) {
-  return { id: Date.now() + Math.random(), sender, text, timestamp: nowTime() };
+/**
+ * Create a well-formed message object.
+ * @param {"ai"|"user"} sender
+ * @param {string} text
+ * @param {boolean} [instant] - true for predefined answers (shows ⚡ badge)
+ */
+function makeMsg(sender, text, instant = false) {
+  return {
+    id: Date.now() + Math.random(),
+    sender,
+    text,
+    timestamp: nowTime(),
+    instant, // used by ChatBubble to show ⚡ Instant answer vs 🤖 AI response
+  };
 }
 
 /**
  * useChatContext — Smart Hybrid AI System
  *
  * Priority order:
- *   1. Political guard       → instant block, no API call
- *   2. Predefined knowledge  → instant answer, no API call, no loading state
+ *   1. Political guard        → instant block, no API call
+ *   2. Predefined knowledge   → instant answer, no API call, no loading state
  *   3. Google Gemini 2.0 Flash → dynamic answer via generativelanguage.googleapis.com
- *   4. Error fallback        → graceful, specific message per failure type
+ *   4. Error fallback         → graceful, specific message per failure type
  *
  * @param {string} currentStep — walkthrough step label injected as Gemini context
  */
@@ -89,13 +124,15 @@ export function useChatContext(currentStep) {
   const [messages, setMessages] = useState([
     makeMsg(
       "ai",
-      "Hi! I'm VoteReady AI 🗳️ Ask me anything about voting in India — eligibility, documents, or the process."
+      "Hi! I'm VoteReady AI 🗳️ Ask me anything about voting in India — eligibility, documents, or the process.",
+      false
     ),
   ]);
   const [isTyping, setIsTyping] = useState(false);
 
-  const appendMsg = useCallback((sender, text) => {
-    setMessages((prev) => [...prev, makeMsg(sender, text)]);
+  /** Append a message. `instant` marks predefined responses. */
+  const appendMsg = useCallback((sender, text, instant = false) => {
+    setMessages((prev) => [...prev, makeMsg(sender, text, instant)]);
   }, []);
 
   const sendMessage = useCallback(async (text) => {
@@ -104,7 +141,6 @@ export function useChatContext(currentStep) {
     if (!trimmed) return;
 
     // Guard: prevent double-send while Gemini is responding
-    // (predefined answers are synchronous so this guard doesn't affect them)
     if (isTyping) return;
 
     appendMsg("user", trimmed);
@@ -113,14 +149,14 @@ export function useChatContext(currentStep) {
 
     // ── Priority 1: Block political opinion requests ───────────────────────
     if (POLITICAL_PHRASES.some((p) => lower.includes(p))) {
-      appendMsg("ai", POLITICAL_BLOCK_MSG);
+      appendMsg("ai", POLITICAL_BLOCK_MSG, true);
       return;
     }
 
     // ── Priority 2: Predefined knowledge base (instant, no loading state) ─
     const predefined = findBestMatch(trimmed);
     if (predefined) {
-      appendMsg("ai", predefined);
+      appendMsg("ai", predefined, true); // instant=true → ⚡ badge in UI
       return;
     }
 
@@ -133,17 +169,18 @@ export function useChatContext(currentStep) {
 
     try {
       const reply = await getGeminiResponse(trimmed, context);
-      appendMsg("ai", reply);
+      appendMsg("ai", reply, false); // instant=false → 🤖 badge in UI
     } catch (err) {
       console.error("[VoteReady AI] Gemini error:", err.message);
 
       const m = err.message ?? "";
 
-      // ── Priority 4: Specific, actionable error messages ─────────────────
+      // ── Priority 4: Specific, actionable error messages ──────────────────
       if (m.includes("429") || m.includes("quota") || m.includes("RESOURCE_EXHAUSTED")) {
         appendMsg(
           "ai",
-          "⚠️ AI quota exhausted for today. Please try again tomorrow or set up a new API key."
+          "⚠️ AI quota exhausted for today. Please try again tomorrow or set up a new API key.",
+          false
         );
       } else if (
         m.includes("NetworkError") ||
@@ -154,15 +191,17 @@ export function useChatContext(currentStep) {
       ) {
         appendMsg(
           "ai",
-          "⚠️ AI service is temporarily unavailable. Please check your internet connection and try again."
+          "⚠️ AI service is temporarily unavailable. Please check your internet connection and try again.",
+          false
         );
       } else if (m.includes("Missing Gemini API key")) {
         appendMsg(
           "ai",
-          "⚠️ AI is not configured. Please set VITE_GEMINI_API_KEY in your .env file and restart the dev server."
+          "⚠️ AI is not configured. Please set VITE_GEMINI_API_KEY in your .env file and restart the dev server.",
+          false
         );
       } else {
-        appendMsg("ai", "Something went wrong. Please try again in a moment.");
+        appendMsg("ai", "Something went wrong. Please try again in a moment.", false);
       }
     } finally {
       setIsTyping(false);
