@@ -58,13 +58,15 @@ Tests cover:
 
 ---
 
-## 🔐 Security Notes
+## 🔐 Security
 
-- API key is injected at build time via Vite (`import.meta.env.VITE_GEMINI_API_KEY`)
-- Debug logs are gated behind `import.meta.env.DEV` — zero console output in production
+- API keys are stored in `.env` and are **never committed** to version control
+- `.env` is listed in `.gitignore` — it will not appear in `git status` or be pushed
+- Use `.env.example` as a template to set up your local environment
+- **Never expose real API keys in public repositories**
+- All debug logs containing the API key are gated behind `import.meta.env.DEV` — zero output in production builds
 - External links use `noopener,noreferrer` to prevent tabnapping
 - All chat message content is rendered as plain text — no `dangerouslySetInnerHTML`
-- `.env` is in `.gitignore` — see `.env.example` for setup
 
 ---
 
