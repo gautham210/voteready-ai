@@ -1,9 +1,9 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 
 export function useProgress(allTaskIds = []) {
   const [completedTasks, setCompletedTasks] = useState(new Set());
   
-  const toggleTask = (taskId) => {
+  const toggleTask = useCallback((taskId) => {
     setCompletedTasks(prev => {
       const newSet = new Set(prev);
       if (newSet.has(taskId)) {
@@ -13,7 +13,7 @@ export function useProgress(allTaskIds = []) {
       }
       return newSet;
     });
-  };
+  }, []);
 
   const progressPercentage = useMemo(() => {
     if (allTaskIds.length === 0) return 0;
@@ -24,11 +24,13 @@ export function useProgress(allTaskIds = []) {
     return allTaskIds.filter(id => !completedTasks.has(id));
   }, [completedTasks, allTaskIds]);
 
+  const isComplete = useCallback((taskId) => completedTasks.has(taskId), [completedTasks]);
+
   return {
     progressPercentage,
     completedTasks,
     remainingTasks,
     toggleTask,
-    isComplete: (taskId) => completedTasks.has(taskId)
+    isComplete
   };
 }

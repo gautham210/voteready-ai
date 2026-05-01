@@ -19,8 +19,17 @@ export function ReadinessChecker() {
         ].map(item => (
           <div 
             key={item.id}
+            role="checkbox"
+            tabIndex={0}
+            aria-checked={formData[item.id]}
             className="flex items-center space-x-2 py-1.5 cursor-pointer group"
             onClick={() => toggleField(item.id)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                toggleField(item.id);
+              }
+            }}
           >
             {formData[item.id] ? (
               <CheckCircle2 className="h-4 w-4 text-slate-400 group-hover:text-green-500 transition-colors" />

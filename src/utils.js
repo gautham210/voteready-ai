@@ -115,6 +115,12 @@ export const mapGeminiError = (rawMessage) => {
 
 // ── EXTERNAL SERVICES ───────────────────────────────────────────────────────
 
+export const GoogleServices = {
+  GEMINI: "Google Generative Language API",
+  MAPS: "Google Maps Search Integration",
+  CALENDAR: "Google Calendar Event Integration"
+};
+
 /**
  * Opens a URL safely in a new tab to prevent tabnapping.
  * @param {string} url - The URL to open

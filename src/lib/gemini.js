@@ -1,3 +1,13 @@
+/**
+ * ARCHITECTURE NOTE:
+ * In production, this request should be proxied through a secure backend
+ * (e.g., Vercel Serverless Function) to protect API keys.
+ * Direct client-side usage is for demo purposes only.
+ */
+
+// SECURITY NOTE:
+// API key is injected via environment variables.
+// In production, requests should be proxied through a backend.
 // Google Gemini 2.0 Flash integration via Generative Language API
 const API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
 

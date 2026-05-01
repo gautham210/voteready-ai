@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useCallback } from 'react'
 import { ProgressBar } from './components/ui/ProgressBar'
 import { FloatingActionButton } from './components/ui/FloatingActionButton'
 import { ReadinessChecker } from './components/features/ReadinessChecker'
@@ -9,6 +9,14 @@ import { BoothWalkthrough } from './components/features/BoothWalkthrough'
 import { CommandBar } from './components/ui/CommandBar'
 import { useProgress } from './hooks/useProgress'
 
+const getMilestoneMessage = (pct) => {
+  if (pct === 100) return "🎉 All done — you're fully ready to vote!"
+  if (pct >= 80) return "🔥 Almost there — just one step left"
+  if (pct >= 50) return "🚀 Halfway there — keep going!"
+  if (pct >= 20) return "👍 Great start — let's prepare"
+  return "👋 Let's get started"
+}
+
 function App() {
   const [userType, setUserType] = useState(null)
   const [isChatOpen, setIsChatOpen] = useState(false)
@@ -18,18 +26,11 @@ function App() {
   const progressHook = useProgress(allTaskIds)
   const { progressPercentage } = progressHook
 
-  const getMilestoneMessage = (pct) => {
-    if (pct === 100) return "🎉 All done — you're fully ready to vote!"
-    if (pct >= 80) return "🔥 Almost there — just one step left"
-    if (pct >= 50) return "🚀 Halfway there — keep going!"
-    if (pct >= 20) return "👍 Great start — let's prepare"
-    return "👋 Let's get started"
-  }
 
-  const handleAskAI = (context = "General") => {
+  const handleAskAI = useCallback((context = "General") => {
     setChatContext(context)
     setIsChatOpen(true)
-  }
+  }, [])
 
   if (!userType) {
     return (

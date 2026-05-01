@@ -47,15 +47,17 @@ Our hybrid system guarantees a zero-failure UX.
 
 This project is built deeply on the Google ecosystem to provide a seamless, production-grade experience:
 
-### 🔗 Real Google Integrations
+## 🧠 Google Services Architecture
 
-- **Google Gemini 2.0 Flash (Generative Language API)** → Powers the AI assistant, delivering real-time, context-aware voter guidance.
-- **Google Maps** → Drives the polling discovery feature, allowing users to find their assigned polling station instantly with a single click.
-- **Google Calendar** → Generates automated vote-day reminders, helping increase voter turnout.
+VoteReady AI integrates multiple Google services:
 
-The app ensures:
-- **Efficient API usage**: Gemini is selectively called only for dynamic queries.
-- **Zero-failure UX**: A hybrid fallback system intercepts common questions locally to guarantee instant responses without hitting network rate limits.
+- Google Gemini API → powers the conversational AI assistant
+- Google Maps → helps users locate polling stations
+- Google Calendar → enables users to set voting reminders
+
+Note:
+In a production environment, Gemini API calls are designed to be proxied
+via secure serverless functions to prevent API key exposure.
 
 
 ## 🚀 Getting Started

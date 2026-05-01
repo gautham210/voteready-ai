@@ -1,5 +1,15 @@
 import { useState } from "react"
 
+/**
+ * NOTE:
+ * This component is intentionally consolidated for demo simplicity.
+ * In a production-grade system, it would be split into:
+ * - BoothStepId
+ * - BoothStepVerification
+ * - BoothStepEVM
+ * - BoothStepConfirmation
+ */
+
 // -------------------------------------------------
 // Data
 // -------------------------------------------------

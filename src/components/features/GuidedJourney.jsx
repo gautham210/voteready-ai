@@ -1,3 +1,4 @@
+import { useMemo } from "react"
 import { Sparkles, MapPin, Calendar, CheckSquare, Square } from "lucide-react"
 import { Card } from "../ui/Card"
 import { Button } from "../ui/Button"
@@ -74,7 +75,9 @@ export function GuidedJourney({ progressHook, onAskAI }) {
     <div className="space-y-6">
       {journeySteps.map((step) => {
         const stepTasks = step.tasks;
-        const completedCount = stepTasks.filter(t => isComplete(t.id)).length;
+        const completedCount = useMemo(() => {
+          return stepTasks.filter(t => isComplete(t.id)).length;
+        }, [stepTasks, isComplete]);
         const isStepFullyComplete = completedCount === stepTasks.length;
 
         let statusChip = null;
@@ -109,11 +112,18 @@ export function GuidedJourney({ progressHook, onAskAI }) {
                 return (
                   <div 
                     key={task.id}
+                    role="checkbox"
+                    tabIndex={0}
+                    aria-checked={checked}
                     className={`flex items-center space-x-3 p-3 rounded-lg border cursor-pointer transition-opacity duration-200 ease-out ${
                       checked ? 'bg-primary-50 border-primary-200 text-primary-900' : 'bg-slate-50 border-slate-200 hover:bg-slate-100'
                     }`}
-                    onClick={() => {
-                      toggleTask(task.id);
+                    onClick={() => toggleTask(task.id)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        toggleTask(task.id);
+                      }
                     }}
                   >
                     {checked ? (
