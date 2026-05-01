@@ -1,3 +1,4 @@
+// Google Gemini 2.0 Flash integration via Generative Language API
 const API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
 
 // System prompt folded into user content — avoids systemInstruction field

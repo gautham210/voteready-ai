@@ -43,6 +43,20 @@ Our hybrid system guarantees a zero-failure UX.
 
 ---
 
+## 🚀 Google Services Integration
+
+This project uses Google Gemini 2.0 Flash via the Generative Language API to:
+
+- Answer real-time voter questions
+- Handle eligibility, documents, and process queries
+- Provide fallback-safe AI responses
+
+The app ensures:
+- Efficient API usage
+- Zero-failure UX via hybrid fallback system
+
+---
+
 ## ☁️ Google Services Impact
 
 - **Google Gemini 2.0 Flash** → Provides real-time, context-aware voter guidance through the Generative Language API.
