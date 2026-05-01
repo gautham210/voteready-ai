@@ -13,6 +13,15 @@ Rules:
 - If the user asks something completely unrelated to voting, gently redirect them to voting topics
 - Always answer eligibility, age, documents, citizenship, and process questions directly`;
 
+/**
+ * Calls the Google Gemini 2.0 Flash API (Generative Language API v1beta) to generate a response.
+ * Uses a REST POST request to avoid SDK bloat and simplify auth handling.
+ *
+ * @param {string} userMessage - The question or input from the user
+ * @param {string} [context=""] - Optional context about the user's current step in the app
+ * @returns {Promise<string>} The extracted text response from Gemini
+ * @throws {Error} If network fails, API returns an error status (e.g. 429 Quota Exceeded), or parsing fails
+ */
 export async function getGeminiResponse(userMessage, context = "") {
   // ── ENV CHECK ─────────────────────────────────────────────────────────────
   if (import.meta.env.DEV) {

@@ -1,7 +1,9 @@
+import { memo } from "react"
 import { cn } from "../../utils"
 
 /**
  * ChatBubble — renders a single message in the AI chat.
+ * Wrapped in React.memo to prevent unnecessary re-renders of the message list.
  *
  * Props:
  *   message   {string}  — text content
@@ -9,7 +11,7 @@ import { cn } from "../../utils"
  *   timestamp  {string} — optional formatted time string
  *   instant    {bool}   — true = predefined answer (⚡), false = Gemini answer (🤖)
  */
-export function ChatBubble({ message, isSenderAI, timestamp, instant = false }) {
+export const ChatBubble = memo(function ChatBubble({ message, isSenderAI, timestamp, instant = false }) {
   return (
     <div
       className={cn(

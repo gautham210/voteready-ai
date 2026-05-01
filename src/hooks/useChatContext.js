@@ -46,7 +46,8 @@ const normalize = (text) =>
  * Token-based matcher — more robust than pure substring matching.
  * Handles real-world phrasing like "i'm 18 can i vote?" or "need an id".
  *
- * Returns the matched answer string, or null.
+ * @param {string} input - The raw user input from the chat
+ * @returns {string|null} - The predefined answer string, or null if no match found
  */
 const findBestMatch = (input) => {
   const text = normalize(input);
@@ -112,13 +113,14 @@ function makeMsg(sender, text, instant = false) {
 /**
  * useChatContext — Smart Hybrid AI System
  *
- * Priority order:
+ * Provides a production-grade chat state manager with priority-based routing:
  *   1. Political guard        → instant block, no API call
  *   2. Predefined knowledge   → instant answer, no API call, no loading state
  *   3. Google Gemini 2.0 Flash → dynamic answer via generativelanguage.googleapis.com
  *   4. Error fallback         → graceful, specific message per failure type
  *
- * @param {string} currentStep — walkthrough step label injected as Gemini context
+ * @param {string} currentStep — Current walkthrough step label (e.g. "ID Verification") injected as Gemini context
+ * @returns {{ messages: Array<Object>, sendMessage: Function, isTyping: boolean }}
  */
 export function useChatContext(currentStep) {
   const [messages, setMessages] = useState([
@@ -171,7 +173,9 @@ export function useChatContext(currentStep) {
       const reply = await getGeminiResponse(trimmed, context);
       appendMsg("ai", reply, false); // instant=false → 🤖 badge in UI
     } catch (err) {
-      console.error("[VoteReady AI] Gemini error:", err.message);
+      if (import.meta.env.DEV) {
+        console.error("[VoteReady AI] Gemini error:", err.message);
+      }
 
       const m = err.message ?? "";
 

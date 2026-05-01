@@ -1,4 +1,4 @@
-🚀 **VoteReady AI** — A production-grade civic platform that simulates the complete Indian voting process and uses Google Gemini AI to guide first-time voters in real-time.
+🚀 VoteReady AI — A production-grade civic platform that simulates the complete Indian voting process and uses Google Gemini AI to guide first-time voters in real-time.
 
 > Powered by **Google Gemini 2.0 Flash** · Built for first-time Indian voters · Accessibility-first · Demo-proof
 
@@ -6,12 +6,19 @@
 
 ## ✨ Features
 
-- **Step-by-step voting simulation** — full 6-step realistic polling booth flow
-- **NOTA support** — None Of The Above on the EVM machine
-- **AI-powered guidance** — Google Gemini 2.0 Flash answers voter questions
-- **Smart fallback system** — instant predefined answers for common questions (zero-failure UX)
-- **Real-world voting flow accuracy** — ID check → officer verification → ink mark → EVM → confirmation
-- **Accessibility-first design** — ARIA roles, keyboard navigation, screen reader support
+- Step-by-step voting simulation
+- NOTA support
+- AI-powered guidance (Gemini)
+- Smart fallback system (zero failure UX)
+- Accessibility-first design
+
+---
+
+## 🏆 Design Philosophy
+
+- Government-grade reliability
+- Startup-grade UX
+- Zero-dependency fallback for critical flows
 
 ---
 
@@ -26,14 +33,21 @@ VoteReady AI combines a **step-by-step voting simulation** with an **AI-powered 
 
 ---
 
-## ☁️ Google Services Used
+## 🤖 AI System Architecture
 
-| Service | Purpose |
-|---|---|
-| **Google Gemini 2.0 Flash** | AI assistant answering voter questions in 2–3 sentences |
-| **Google Maps** | Polling station finder (via Maps Search URL) |
-| **Google Calendar** | Vote-day reminder (via Calendar event URL) |
-| **Generative Language API** | `generativelanguage.googleapis.com/v1beta` REST endpoint |
+Our hybrid system guarantees a zero-failure UX. 
+
+- **Smart Fallback Engine**: Common questions (e.g., "Can I vote at 18?") are intercepted locally using a robust token-based matcher for instant, zero-latency answers. This completely bypasses network variability.
+- **Selective Intelligence**: Google Gemini is reserved strictly for complex, unknown, or dynamic queries. This ensures we don't waste API quota on common knowledge, and the app never crashes during a live demo.
+- **Graceful Error Handling**: If network fails or quota is exhausted, users see clear, actionable fallback messages instead of technical errors.
+
+---
+
+## ☁️ Google Services Impact
+
+- **Google Gemini 2.0 Flash** → Provides real-time, context-aware voter guidance through the Generative Language API.
+- **Google Maps** → Drives the polling discovery feature, allowing users to find their assigned polling station instantly.
+- **Google Calendar** → Generates automated vote-day reminders seamlessly.
 
 ---
 
@@ -71,6 +85,7 @@ Tests cover:
 
 ## 🔐 Security
 
+- API keys are never committed and handled via environment variables
 - API keys are stored in `.env` and are **never committed** to version control
 - `.env` is listed in `.gitignore` — it will not appear in `git status` or be pushed
 - Use `.env.example` as a template to set up your local environment
