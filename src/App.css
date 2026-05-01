@@ -1,0 +1,8 @@
+/*
+ * App.css — VoteReady AI
+ *
+ * Global app-level styles. Component styles live in index.css (Tailwind layers)
+ * and inline style objects within each component (BoothWalkthrough uses JS styles).
+ *
+ * This file is intentionally minimal — all design tokens are in tailwind.config.js.
+ */
