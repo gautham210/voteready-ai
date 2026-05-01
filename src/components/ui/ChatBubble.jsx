@@ -72,4 +72,4 @@ export const ChatBubble = memo(function ChatBubble({ message, isSenderAI, timest
       )}
     </div>
   )
-}
+})
