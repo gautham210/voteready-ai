@@ -45,25 +45,18 @@ Our hybrid system guarantees a zero-failure UX.
 
 ## 🚀 Google Services Integration
 
-This project uses Google Gemini 2.0 Flash via the Generative Language API to:
+This project is built deeply on the Google ecosystem to provide a seamless, production-grade experience:
 
-- Answer real-time voter questions
-- Handle eligibility, documents, and process queries
-- Provide fallback-safe AI responses
+### 🔗 Real Google Integrations
+
+- **Google Gemini 2.0 Flash (Generative Language API)** → Powers the AI assistant, delivering real-time, context-aware voter guidance.
+- **Google Maps** → Drives the polling discovery feature, allowing users to find their assigned polling station instantly with a single click.
+- **Google Calendar** → Generates automated vote-day reminders, helping increase voter turnout.
 
 The app ensures:
-- Efficient API usage
-- Zero-failure UX via hybrid fallback system
+- **Efficient API usage**: Gemini is selectively called only for dynamic queries.
+- **Zero-failure UX**: A hybrid fallback system intercepts common questions locally to guarantee instant responses without hitting network rate limits.
 
----
-
-## ☁️ Google Services Impact
-
-- **Google Gemini 2.0 Flash** → Provides real-time, context-aware voter guidance through the Generative Language API.
-- **Google Maps** → Drives the polling discovery feature, allowing users to find their assigned polling station instantly.
-- **Google Calendar** → Generates automated vote-day reminders seamlessly.
-
----
 
 ## 🚀 Getting Started
 

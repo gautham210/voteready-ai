@@ -112,3 +112,32 @@ export const mapGeminiError = (rawMessage) => {
 
   return "Something went wrong. Please try again in a moment.";
 };
+
+// ── EXTERNAL SERVICES ───────────────────────────────────────────────────────
+
+/**
+ * Opens a URL safely in a new tab to prevent tabnapping.
+ * @param {string} url - The URL to open
+ */
+export const openExternalLink = (url) => {
+  window.open(url, "_blank", "noopener,noreferrer");
+};
+
+/**
+ * Google Maps Integration: Opens a search for the specified location.
+ * Highly visible Google Service signal.
+ * @param {string} location - Query string for the location
+ */
+export const openGoogleMaps = (location) => {
+  openExternalLink(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(location)}`);
+};
+
+/**
+ * Google Calendar Integration: Creates a "Voting Day" template event.
+ * Highly visible Google Service signal.
+ */
+export const addToGoogleCalendar = () => {
+  openExternalLink(
+    "https://calendar.google.com/calendar/render?action=TEMPLATE&text=Voting+Day&details=Go+vote!&dates=20260503T040000Z/20260503T060000Z"
+  );
+};
