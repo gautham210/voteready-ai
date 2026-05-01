@@ -63,8 +63,8 @@ export const normalize = (text) =>
 export const findBestMatch = (input) => {
   const text = normalize(input);
 
-  // "id" keyword → document question
-  if (text.includes("id")) return SUGGESTED_QA["what id do i need"];
+  // Match "id" as a whole word to avoid false positives in words like "did", "invalid", "period"
+  if (/\bid\b/.test(text)) return SUGGESTED_QA["what id do i need"];
 
   // voting age
   if (text.includes("vote") && text.includes("18")) return SUGGESTED_QA["can i vote at 18"];

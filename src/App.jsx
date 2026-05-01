@@ -1,7 +1,5 @@
 import { useState, useMemo, useCallback } from 'react'
 import { ProgressBar } from './components/ui/ProgressBar'
-import { FloatingActionButton } from './components/ui/FloatingActionButton'
-import { ReadinessChecker } from './components/features/ReadinessChecker'
 import { GuidedJourney, getAllTaskIds } from './components/features/GuidedJourney'
 import { ChatAssistant } from './components/features/ChatAssistant'
 import { TakeAction } from './components/features/TakeAction'
@@ -101,9 +99,6 @@ function App() {
                 </p>
               </div>
               <TakeAction />
-              <div className="mt-8">
-                <ReadinessChecker />
-              </div>
             </div>
           </div>
 
@@ -118,7 +113,6 @@ function App() {
 
             <div className="lg:hidden space-y-8 mb-8">
               <TakeAction />
-              <ReadinessChecker />
             </div>
 
             <section>

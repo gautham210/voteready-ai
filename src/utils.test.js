@@ -13,7 +13,7 @@ describe('utils', () => {
   });
 
   describe('findBestMatch', () => {
-    it('matches "id" keyword', () => {
+    it('matches "id" keyword as a whole word', () => {
       expect(findBestMatch('do i need an id')).toMatch(/valid photo ID/i);
     });
 
@@ -23,6 +23,13 @@ describe('utils', () => {
 
     it('returns null for unmatched input', () => {
       expect(findBestMatch('what is the weather')).toBeNull();
+    });
+
+    // Safety test: "id" as substring of other words must NOT false-match
+    it('does NOT match when "id" appears inside another word (false-positive guard)', () => {
+      expect(findBestMatch('what did I do wrong')).toBeNull();
+      expect(findBestMatch('invalid question here')).toBeNull();
+      expect(findBestMatch('consider this period')).toBeNull();
     });
   });
 

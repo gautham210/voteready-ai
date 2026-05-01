@@ -36,9 +36,7 @@ Rules:
 export async function getGeminiResponse(userMessage, context = "") {
   // ── ENV CHECK ─────────────────────────────────────────────────────────────
   if (import.meta.env.DEV) {
-    console.log('=== GEMINI DEBUG START ===');
-    console.log('ENV vars:', import.meta.env);
-    console.log('API_KEY:', API_KEY);
+    console.log('[Gemini] Initiating request...');
   }
 
   if (!API_KEY || API_KEY === "undefined" || API_KEY.trim() === "") {
@@ -74,8 +72,7 @@ export async function getGeminiResponse(userMessage, context = "") {
   };
 
   if (import.meta.env.DEV) {
-    console.log('POST →', url);
-    console.log('BODY:', JSON.stringify(requestBody, null, 2));
+    console.log('[Gemini] POST →', 'generativelanguage.googleapis.com');
   }
 
   // ── FETCH ─────────────────────────────────────────────────────────────────

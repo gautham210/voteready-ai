@@ -1,8 +1,9 @@
-import { useMemo } from "react"
 import { Sparkles, MapPin, Calendar, CheckSquare, Square } from "lucide-react"
 import { Card } from "../ui/Card"
 import { Button } from "../ui/Button"
+import { openGoogleMaps, addToGoogleCalendar } from "../../utils"
 
+/** Static step definitions — module-level constant, not recreated on render. */
 export const journeySteps = [
   {
     id: "eligibility",
@@ -63,21 +64,26 @@ export const journeySteps = [
   }
 ];
 
-// Helper to get all task IDs
-export const getAllTaskIds = () => {
-  return journeySteps.flatMap(step => step.tasks.map(t => t.id));
-};
+/** Returns a flat list of all task IDs across every journey step. */
+export const getAllTaskIds = () =>
+  journeySteps.flatMap(step => step.tasks.map(t => t.id));
 
+/**
+ * GuidedJourney — renders the 5-step voting preparation checklist.
+ * Each step card shows tasks as accessible checkboxes (keyboard + click).
+ * Google Maps and Calendar are integrated via centralized utility helpers.
+ *
+ * @param {{ progressHook: Object, onAskAI: Function }} props
+ */
 export function GuidedJourney({ progressHook, onAskAI }) {
   const { toggleTask, isComplete } = progressHook
-  
+
   return (
     <div className="space-y-6">
       {journeySteps.map((step) => {
         const stepTasks = step.tasks;
-        const completedCount = useMemo(() => {
-          return stepTasks.filter(t => isComplete(t.id)).length;
-        }, [stepTasks, isComplete]);
+        // Plain variable — hooks must NOT be called inside .map() callbacks
+        const completedCount = stepTasks.filter(t => isComplete(t.id)).length;
         const isStepFullyComplete = completedCount === stepTasks.length;
 
         let statusChip = null;
@@ -90,8 +96,8 @@ export function GuidedJourney({ progressHook, onAskAI }) {
         }
 
         return (
-          <Card 
-            key={step.id} 
+          <Card
+            key={step.id}
             className={`transition-opacity duration-200 ease-out ${isStepFullyComplete ? 'border-primary-200 bg-primary-50/30' : ''}`}
           >
             <div className="flex justify-between items-start mb-2">
@@ -100,17 +106,17 @@ export function GuidedJourney({ progressHook, onAskAI }) {
               </h3>
               {statusChip}
             </div>
-            
+
             <p className="text-sm text-gray-600 mt-2 mb-4 whitespace-pre-line">
               {step.infoText}
             </p>
 
-            {/* Task List */}
+            {/* Task List — role="checkbox" + keyboard support for full a11y */}
             <div className="space-y-2 mb-4">
               {stepTasks.map(task => {
                 const checked = isComplete(task.id);
                 return (
-                  <div 
+                  <div
                     key={task.id}
                     role="checkbox"
                     tabIndex={0}
@@ -127,9 +133,9 @@ export function GuidedJourney({ progressHook, onAskAI }) {
                     }}
                   >
                     {checked ? (
-                      <CheckSquare className="h-5 w-5 text-primary-600 shrink-0" />
+                      <CheckSquare className="h-5 w-5 text-primary-600 shrink-0" aria-hidden="true" />
                     ) : (
-                      <Square className="h-5 w-5 text-slate-400 shrink-0" />
+                      <Square className="h-5 w-5 text-slate-400 shrink-0" aria-hidden="true" />
                     )}
                     <span className={`text-sm font-medium ${checked ? 'line-through opacity-70' : ''}`}>
                       {task.label}
@@ -146,36 +152,38 @@ export function GuidedJourney({ progressHook, onAskAI }) {
               </div>
             )}
 
-            {/* External Actions for Voting Day */}
+            {/* Google Services integration — centralized helpers from utils.js */}
             {step.hasLocationAction && (
               <div className="flex flex-wrap gap-2 mb-4">
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   size="sm"
-                  onClick={() => window.open(`https://www.google.com/maps/search/?api=1&query=polling+station+near+me`, '_blank', 'noopener,noreferrer')}
+                  onClick={() => openGoogleMaps("polling station near me")}
+                  aria-label="Find Polling Station on Google Maps"
                 >
-                  <MapPin className="h-4 w-4 mr-2" /> Find Polling Station
+                  <MapPin className="h-4 w-4 mr-2" aria-hidden="true" /> Find Polling Station
                 </Button>
                 {step.hasCalendarAction && (
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     size="sm"
-                    onClick={() => window.open(`https://calendar.google.com/calendar/render?action=TEMPLATE&text=Voting+Day&details=Go+vote!&dates=20260503T040000Z/20260503T060000Z`, '_blank', 'noopener,noreferrer')}
+                    onClick={addToGoogleCalendar}
+                    aria-label="Add Voting Day reminder to Google Calendar"
                   >
-                    <Calendar className="h-4 w-4 mr-2" /> Add Reminder
+                    <Calendar className="h-4 w-4 mr-2" aria-hidden="true" /> Add Reminder
                   </Button>
                 )}
               </div>
             )}
 
             <div className="flex justify-end mt-4 pt-4 border-t border-slate-50">
-              <Button 
-                variant="ghost" 
+              <Button
+                variant="ghost"
                 onClick={() => onAskAI(step.title)}
-                title="Explain Simpler"
+                aria-label={`Ask AI about ${step.title}`}
                 className="flex gap-2 text-amber-600 hover:bg-amber-50"
               >
-                <Sparkles className="h-5 w-5" />
+                <Sparkles className="h-5 w-5" aria-hidden="true" />
                 <span className="hidden sm:inline text-sm">Ask AI about this</span>
               </Button>
             </div>
